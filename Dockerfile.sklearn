@@ -1,0 +1,10 @@
+FROM registry.access.redhat.com/ubi10-micro:latest
+
+# Copy the sklearn model to /models directory
+COPY --chown=1001:0 models/mlserver/sklearn/model.joblib /models/model.joblib
+
+# Set proper privileges for KServe
+RUN chmod -R a=rX /models
+
+# Use non-root user as default
+USER 1001
