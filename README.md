@@ -18,6 +18,31 @@ Currently supported ML frameworks:
 
 - Podman (or Docker)
 - Access to a container registry (e.g., quay.io)
+- Python 3.12+ (for training models)
+- uv (for Python dependency management)
+
+### Training Models
+
+Train models using Iris dataset:
+
+```bash
+# Install dependencies first
+make install-deps
+
+# Train all models
+make train-all
+
+# Or train specific models
+make train-sklearn
+make train-xgboost
+make train-lightgbm
+```
+
+All trained models produce the expected output `[1, 1]` for the reference test data:
+
+```python
+[[6.8, 2.8, 4.8, 1.4], [6.0, 3.4, 4.5, 1.6]]
+```
 
 ### Building Images
 
@@ -35,18 +60,27 @@ make build-xgboost
 make build-lightgbm
 ```
 
-### Customizing Registry and Version
+### Customizing Registry and Versions
 
-You can override the default registry and version:
+You can override the default registry and framework versions:
 
 ```bash
-make REGISTRY=quay.io/your-username VERSION=v2.0.0 build-all
+# Build with custom sklearn version
+make SKLEARN_VERSION=1.9.0 build-sklearn
+
+# Build all with custom registry
+make REGISTRY=quay.io/your-username build-all
+
+# Build specific version for each framework
+make SKLEARN_VERSION=1.9.0 XGBOOST_VERSION=3.3.0 LIGHTGBM_VERSION=4.7.0 build-all
 ```
 
 Default values:
 
 - `REGISTRY`: `quay.io/jooholee`
-- `VERSION`: `v1.0.0`
+- `SKLEARN_VERSION`: `1.8.0` (scikit-learn framework version)
+- `XGBOOST_VERSION`: `3.2.0` (XGBoost framework version)
+- `LIGHTGBM_VERSION`: `4.6.0` (LightGBM framework version)
 
 ### Pushing Images
 
@@ -101,7 +135,8 @@ spec:
       runtime: mlserver
       modelFormat:
         name: sklearn
-      storageUri: oci://quay.io/jooholee/mlserver-sklearn:v1.0.0
+      storageUri: oci://quay.io/jooholee/mlserver-sklearn:1.8.0
+      # Or use latest tag: oci://quay.io/jooholee/mlserver-sklearn:latest
 ```
 
 ## Project Structure
@@ -111,16 +146,20 @@ spec:
 ├── Dockerfile.sklearn      # Dockerfile for sklearn model
 ├── Dockerfile.xgboost      # Dockerfile for xgboost model
 ├── Dockerfile.lightgbm     # Dockerfile for lightgbm model
-├── Makefile                # Build automation
+├── Makefile                # Build and training automation
+├── requirements.txt        # Python dependencies
+├── train-sklearn.py        # sklearn model training script
+├── train-xgboost.py        # XGBoost model training script
+├── train-lightgbm.py       # LightGBM model training script
 ├── README.md
 └── models/
     └── mlserver/
         ├── sklearn/
-        │   └── model.joblib
+        │   └── model.joblib    # sklearn model file
         ├── xgboost/
-        │   └── model.bst
+        │   └── model.bst       # XGBoost model file
         └── lightgbm/
-            └── model.bst
+            └── model.txt       # LightGBM model file
 ```
 
 ## Image Details
@@ -132,6 +171,16 @@ All images are built with:
 - **User**: Non-root user (UID 1001)
 - **Format**: OCI-compliant
 - **Optimization**: Squashed layers for minimal size
+
+### Framework Versions and Tags
+
+Each image is tagged with its framework version:
+
+- **scikit-learn**: `quay.io/jooholee/mlserver-sklearn:1.8.0`
+- **XGBoost**: `quay.io/jooholee/mlserver-xgboost:3.2.0`
+- **LightGBM**: `quay.io/jooholee/mlserver-lightgbm:4.6.0`
+
+All images also have a `latest` tag pointing to the most recent build.
 
 ### OpenShift Compatibility
 

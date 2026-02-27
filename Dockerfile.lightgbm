@@ -1,7 +1,7 @@
 FROM registry.access.redhat.com/ubi10-micro:latest
 
 # Copy the lightgbm model to /models directory
-COPY --chown=1001:0 models/mlserver/lightgbm/model.bst /models/model.bst
+COPY --chown=1001:0 models/mlserver/lightgbm/model.txt /models/model.txt
 
 # Set proper privileges for KServe
 RUN chmod -R a=rX /models

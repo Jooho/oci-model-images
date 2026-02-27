@@ -1,27 +1,32 @@
 # OCI Model Images Build Automation
 # Variables can be overridden from command line:
-# make REGISTRY=quay.io/custom VERSION=v2.0.0 build-all
+# make REGISTRY=quay.io/custom SKLEARN_VERSION=1.9.0 build-sklearn
 
 REGISTRY ?= quay.io/jooholee
-VERSION ?= v1.0.0
+SKLEARN_VERSION ?= 1.8.0
+XGBOOST_VERSION ?= 3.2.0
+LIGHTGBM_VERSION ?= 4.6.0
 
-IMAGE_SKLEARN = $(REGISTRY)/mlserver-sklearn:$(VERSION)
+IMAGE_SKLEARN = $(REGISTRY)/mlserver-sklearn:$(SKLEARN_VERSION)
 IMAGE_SKLEARN_LATEST = $(REGISTRY)/mlserver-sklearn:latest
-IMAGE_XGBOOST = $(REGISTRY)/mlserver-xgboost:$(VERSION)
+IMAGE_XGBOOST = $(REGISTRY)/mlserver-xgboost:$(XGBOOST_VERSION)
 IMAGE_XGBOOST_LATEST = $(REGISTRY)/mlserver-xgboost:latest
-IMAGE_LIGHTGBM = $(REGISTRY)/mlserver-lightgbm:$(VERSION)
+IMAGE_LIGHTGBM = $(REGISTRY)/mlserver-lightgbm:$(LIGHTGBM_VERSION)
 IMAGE_LIGHTGBM_LATEST = $(REGISTRY)/mlserver-lightgbm:latest
 
-.PHONY: help build-sklearn build-xgboost build-lightgbm build-all \
+.PHONY: help train-sklearn train-xgboost train-lightgbm train-all \
+        build-sklearn build-xgboost build-lightgbm build-all \
         push-sklearn push-xgboost push-lightgbm push-all \
-        all clean
+        all clean install-deps
 
 help:
 	@echo "OCI Model Images - Build Automation"
 	@echo ""
 	@echo "Variables:"
-	@echo "  REGISTRY  = $(REGISTRY)"
-	@echo "  VERSION   = $(VERSION)"
+	@echo "  REGISTRY         = $(REGISTRY)"
+	@echo "  SKLEARN_VERSION  = $(SKLEARN_VERSION)"
+	@echo "  XGBOOST_VERSION  = $(XGBOOST_VERSION)"
+	@echo "  LIGHTGBM_VERSION = $(LIGHTGBM_VERSION)"
 	@echo ""
 	@echo "Images:"
 	@echo "  sklearn   = $(IMAGE_SKLEARN)"
@@ -29,6 +34,12 @@ help:
 	@echo "  lightgbm  = $(IMAGE_LIGHTGBM)"
 	@echo ""
 	@echo "Targets:"
+	@echo "  install-deps    - Install Python dependencies using uv"
+	@echo "  train-sklearn   - Train sklearn model on Iris dataset"
+	@echo "  train-xgboost   - Train xgboost model on Iris dataset"
+	@echo "  train-lightgbm  - Train lightgbm model on Iris dataset"
+	@echo "  train-all       - Train all models"
+	@echo ""
 	@echo "  build-sklearn   - Build sklearn model image"
 	@echo "  build-xgboost   - Build xgboost model image"
 	@echo "  build-lightgbm  - Build lightgbm model image"
@@ -44,7 +55,39 @@ help:
 	@echo ""
 	@echo "Examples:"
 	@echo "  make build-all"
-	@echo "  make REGISTRY=quay.io/custom VERSION=v2.0.0 all"
+	@echo "  make REGISTRY=quay.io/custom SKLEARN_VERSION=1.9.0 build-sklearn"
+	@echo "  make push-all"
+
+# Dependencies
+install-deps:
+	@echo "Installing Python dependencies with uv..."
+	@if [ ! -d ".venv" ]; then \
+		echo "Creating virtual environment..."; \
+		uv venv --python 3.12; \
+	fi
+	@echo "Installing packages from requirements.txt..."
+	@source .venv/bin/activate && uv pip install -r requirements.txt
+	@echo "✓ Dependencies installed"
+
+# Training targets
+train-sklearn:
+	@echo "Training sklearn model..."
+	PYTHONPATH=.venv/lib/python3.12/site-packages python3.12 train-sklearn.py
+	@echo "✓ sklearn model trained"
+
+train-xgboost:
+	@echo "Training xgboost model..."
+	PYTHONPATH=.venv/lib/python3.12/site-packages python3.12 train-xgboost.py
+	@echo "✓ xgboost model trained"
+
+train-lightgbm:
+	@echo "Training lightgbm model..."
+	PYTHONPATH=.venv/lib/python3.12/site-packages python3.12 train-lightgbm.py
+	@echo "✓ lightgbm model trained"
+
+train-all: train-sklearn train-xgboost train-lightgbm
+	@echo ""
+	@echo "✓ All models trained successfully"
 
 # Build targets
 build-sklearn:
