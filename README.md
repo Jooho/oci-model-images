@@ -11,6 +11,7 @@ Currently supported ML frameworks:
 - **scikit-learn** - `mlserver-sklearn`
 - **XGBoost** - `mlserver-xgboost`
 - **LightGBM** - `mlserver-lightgbm`
+- **ONNX** - `mlserver-onnx` (CPU/GPU compatible)
 
 ## Getting Started
 
@@ -36,6 +37,7 @@ make train-all
 make train-sklearn
 make train-xgboost
 make train-lightgbm
+make train-onnx
 ```
 
 All trained models produce the expected output `[1, 1]` for the reference test data:
@@ -58,6 +60,7 @@ Build a specific model image:
 make build-sklearn
 make build-xgboost
 make build-lightgbm
+make build-onnx
 ```
 
 ### Customizing Registry and Versions
@@ -81,6 +84,7 @@ Default values:
 - `SKLEARN_VERSION`: `1.8.0` (scikit-learn framework version)
 - `XGBOOST_VERSION`: `3.2.0` (XGBoost framework version)
 - `LIGHTGBM_VERSION`: `4.6.0` (LightGBM framework version)
+- `ONNX_VERSION`: `1.20.1` (ONNX framework version)
 
 ### Pushing Images
 
@@ -146,11 +150,13 @@ spec:
 ├── Dockerfile.sklearn      # Dockerfile for sklearn model
 ├── Dockerfile.xgboost      # Dockerfile for xgboost model
 ├── Dockerfile.lightgbm     # Dockerfile for lightgbm model
+├── Dockerfile.onnx         # Dockerfile for ONNX model
 ├── Makefile                # Build and training automation
 ├── requirements.txt        # Python dependencies
 ├── train-sklearn.py        # sklearn model training script
 ├── train-xgboost.py        # XGBoost model training script
 ├── train-lightgbm.py       # LightGBM model training script
+├── train-onnx.py           # ONNX model training script
 ├── README.md
 └── models/
     └── mlserver/
@@ -158,8 +164,10 @@ spec:
         │   └── model.joblib    # sklearn model file
         ├── xgboost/
         │   └── model.bst       # XGBoost model file
-        └── lightgbm/
-            └── model.txt       # LightGBM model file
+        ├── lightgbm/
+        │   └── model.txt       # LightGBM model file
+        └── onnx/
+            └── model.onnx      # ONNX model file (CPU/GPU compatible)
 ```
 
 ## Image Details
@@ -179,8 +187,11 @@ Each image is tagged with its framework version:
 - **scikit-learn**: `quay.io/jooholee/mlserver-sklearn:1.8.0`
 - **XGBoost**: `quay.io/jooholee/mlserver-xgboost:3.2.0`
 - **LightGBM**: `quay.io/jooholee/mlserver-lightgbm:4.6.0`
+- **ONNX**: `quay.io/jooholee/mlserver-onnx:1.20.1` (CPU/GPU compatible)
 
 All images also have a `latest` tag pointing to the most recent build.
+
+**Note on ONNX**: The ONNX model is framework-agnostic and can run on both CPU and GPU using `onnxruntime` (CPU) or `onnxruntime-gpu` (GPU) without changing the model file.
 
 ### OpenShift Compatibility
 

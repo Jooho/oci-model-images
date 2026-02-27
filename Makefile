@@ -6,6 +6,7 @@ REGISTRY ?= quay.io/jooholee
 SKLEARN_VERSION ?= 1.8.0
 XGBOOST_VERSION ?= 3.2.0
 LIGHTGBM_VERSION ?= 4.6.0
+ONNX_VERSION ?= 1.20.1
 
 IMAGE_SKLEARN = $(REGISTRY)/mlserver-sklearn:$(SKLEARN_VERSION)
 IMAGE_SKLEARN_LATEST = $(REGISTRY)/mlserver-sklearn:latest
@@ -13,10 +14,12 @@ IMAGE_XGBOOST = $(REGISTRY)/mlserver-xgboost:$(XGBOOST_VERSION)
 IMAGE_XGBOOST_LATEST = $(REGISTRY)/mlserver-xgboost:latest
 IMAGE_LIGHTGBM = $(REGISTRY)/mlserver-lightgbm:$(LIGHTGBM_VERSION)
 IMAGE_LIGHTGBM_LATEST = $(REGISTRY)/mlserver-lightgbm:latest
+IMAGE_ONNX = $(REGISTRY)/mlserver-onnx:$(ONNX_VERSION)
+IMAGE_ONNX_LATEST = $(REGISTRY)/mlserver-onnx:latest
 
-.PHONY: help train-sklearn train-xgboost train-lightgbm train-all \
-        build-sklearn build-xgboost build-lightgbm build-all \
-        push-sklearn push-xgboost push-lightgbm push-all \
+.PHONY: help train-sklearn train-xgboost train-lightgbm train-onnx train-all \
+        build-sklearn build-xgboost build-lightgbm build-onnx build-all \
+        push-sklearn push-xgboost push-lightgbm push-onnx push-all \
         all clean install-deps
 
 help:
@@ -27,27 +30,32 @@ help:
 	@echo "  SKLEARN_VERSION  = $(SKLEARN_VERSION)"
 	@echo "  XGBOOST_VERSION  = $(XGBOOST_VERSION)"
 	@echo "  LIGHTGBM_VERSION = $(LIGHTGBM_VERSION)"
+	@echo "  ONNX_VERSION     = $(ONNX_VERSION)"
 	@echo ""
 	@echo "Images:"
 	@echo "  sklearn   = $(IMAGE_SKLEARN)"
 	@echo "  xgboost   = $(IMAGE_XGBOOST)"
 	@echo "  lightgbm  = $(IMAGE_LIGHTGBM)"
+	@echo "  onnx      = $(IMAGE_ONNX)"
 	@echo ""
 	@echo "Targets:"
 	@echo "  install-deps    - Install Python dependencies using uv"
 	@echo "  train-sklearn   - Train sklearn model on Iris dataset"
 	@echo "  train-xgboost   - Train xgboost model on Iris dataset"
 	@echo "  train-lightgbm  - Train lightgbm model on Iris dataset"
+	@echo "  train-onnx      - Train and convert model to ONNX format (CPU/GPU compatible)"
 	@echo "  train-all       - Train all models"
 	@echo ""
 	@echo "  build-sklearn   - Build sklearn model image"
 	@echo "  build-xgboost   - Build xgboost model image"
 	@echo "  build-lightgbm  - Build lightgbm model image"
+	@echo "  build-onnx      - Build ONNX model image"
 	@echo "  build-all       - Build all model images"
 	@echo ""
 	@echo "  push-sklearn    - Push sklearn image to registry"
 	@echo "  push-xgboost    - Push xgboost image to registry"
 	@echo "  push-lightgbm   - Push lightgbm image to registry"
+	@echo "  push-onnx       - Push ONNX image to registry"
 	@echo "  push-all        - Push all images to registry"
 	@echo ""
 	@echo "  all             - Build and push all images"
@@ -85,7 +93,12 @@ train-lightgbm:
 	PYTHONPATH=.venv/lib/python3.12/site-packages python3.12 train-lightgbm.py
 	@echo "✓ lightgbm model trained"
 
-train-all: train-sklearn train-xgboost train-lightgbm
+train-onnx:
+	@echo "Training and converting model to ONNX format..."
+	PYTHONPATH=.venv/lib/python3.12/site-packages python3.12 train-onnx.py
+	@echo "✓ ONNX model trained and converted"
+
+train-all: train-sklearn train-xgboost train-lightgbm train-onnx
 	@echo ""
 	@echo "✓ All models trained successfully"
 
@@ -108,7 +121,13 @@ build-lightgbm:
 	@echo "✓ Built: $(IMAGE_LIGHTGBM)"
 	@echo "✓ Tagged: $(IMAGE_LIGHTGBM_LATEST)"
 
-build-all: build-sklearn build-xgboost build-lightgbm
+build-onnx:
+	@echo "Building ONNX model image..."
+	podman build --format=oci --squash -f Dockerfile.onnx -t $(IMAGE_ONNX) -t $(IMAGE_ONNX_LATEST) .
+	@echo "✓ Built: $(IMAGE_ONNX)"
+	@echo "✓ Tagged: $(IMAGE_ONNX_LATEST)"
+
+build-all: build-sklearn build-xgboost build-lightgbm build-onnx
 	@echo ""
 	@echo "✓ All images built successfully"
 
@@ -134,7 +153,14 @@ push-lightgbm:
 	@echo "✓ Pushed: $(IMAGE_LIGHTGBM)"
 	@echo "✓ Pushed: $(IMAGE_LIGHTGBM_LATEST)"
 
-push-all: push-sklearn push-xgboost push-lightgbm
+push-onnx:
+	@echo "Pushing ONNX image to registry..."
+	podman push $(IMAGE_ONNX)
+	podman push $(IMAGE_ONNX_LATEST)
+	@echo "✓ Pushed: $(IMAGE_ONNX)"
+	@echo "✓ Pushed: $(IMAGE_ONNX_LATEST)"
+
+push-all: push-sklearn push-xgboost push-lightgbm push-onnx
 	@echo ""
 	@echo "✓ All images pushed successfully"
 
@@ -149,4 +175,5 @@ clean:
 	-podman rmi $(IMAGE_SKLEARN) $(IMAGE_SKLEARN_LATEST) 2>/dev/null || true
 	-podman rmi $(IMAGE_XGBOOST) $(IMAGE_XGBOOST_LATEST) 2>/dev/null || true
 	-podman rmi $(IMAGE_LIGHTGBM) $(IMAGE_LIGHTGBM_LATEST) 2>/dev/null || true
+	-podman rmi $(IMAGE_ONNX) $(IMAGE_ONNX_LATEST) 2>/dev/null || true
 	@echo "✓ Cleanup complete"
