@@ -165,7 +165,8 @@ spec:
         ├── xgboost/
         │   └── model.bst       # XGBoost model file
         ├── lightgbm/
-        │   └── model.txt       # LightGBM model file
+        │   ├── model.bst       # LightGBM model file (MLServer wellknown)
+        │   └── model.txt       # LightGBM model file (alternative)
         └── onnx/
             └── model.onnx      # ONNX model file (CPU/GPU compatible)
 ```

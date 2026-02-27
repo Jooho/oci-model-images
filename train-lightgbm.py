@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Train LightGBM model on Iris dataset and save as model.txt
+Train LightGBM model on Iris dataset and save in both formats (model.txt and model.bst)
 Expected output for test data [6.8, 2.8, 4.8, 1.4] and [6.0, 3.4, 4.5, 1.6]: [1, 1]
 """
 
@@ -71,17 +71,29 @@ print(f"Input: {test_data_ref.tolist()}")
 print(f"Predictions: {predictions.tolist()}")
 print(f"Expected: [1, 1]")
 
-# Save model
-output_path = "models/mlserver/lightgbm/model.txt"
-print(f"\nSaving model to {output_path}...")
-model.save_model(output_path)
-print("✓ Model saved successfully")
+# Save model in both formats for flexibility
+output_path_txt = "models/mlserver/lightgbm/model.txt"
+output_path_bst = "models/mlserver/lightgbm/model.bst"
 
-# Verify saved model
-print("\nVerifying saved model...")
-loaded_model = lgb.Booster(model_file=output_path)
-verify_predictions_proba = loaded_model.predict(test_data_ref)
-verify_predictions = np.argmax(verify_predictions_proba, axis=1)
-print(f"Loaded model predictions: {verify_predictions.tolist()}")
-assert np.array_equal(predictions, verify_predictions), "Model verification failed!"
-print("✓ Model verification passed")
+print(f"\nSaving model to {output_path_txt}...")
+model.save_model(output_path_txt)
+print("✓ Model saved as model.txt")
+
+print(f"Saving model to {output_path_bst}...")
+model.save_model(output_path_bst)
+print("✓ Model saved as model.bst (MLServer wellknown filename)")
+
+# Verify both saved models
+print("\nVerifying saved models...")
+loaded_model_txt = lgb.Booster(model_file=output_path_txt)
+loaded_model_bst = lgb.Booster(model_file=output_path_bst)
+
+verify_predictions_txt = np.argmax(loaded_model_txt.predict(test_data_ref), axis=1)
+verify_predictions_bst = np.argmax(loaded_model_bst.predict(test_data_ref), axis=1)
+
+print(f"model.txt predictions: {verify_predictions_txt.tolist()}")
+print(f"model.bst predictions: {verify_predictions_bst.tolist()}")
+
+assert np.array_equal(predictions, verify_predictions_txt), "model.txt verification failed!"
+assert np.array_equal(predictions, verify_predictions_bst), "model.bst verification failed!"
+print("✓ Both models verification passed")

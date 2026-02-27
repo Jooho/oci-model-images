@@ -1,6 +1,10 @@
 FROM registry.access.redhat.com/ubi10-micro:latest
 
-# Copy the lightgbm model to /models directory
+# Copy the lightgbm models to /models directory
+# Both formats provided for flexibility:
+# - model.bst: MLServer wellknown filename (auto-detected)
+# - model.txt: Alternative format (requires MLSERVER_MODEL_URI env var)
+COPY --chown=1001:0 models/mlserver/lightgbm/model.bst /models/model.bst
 COPY --chown=1001:0 models/mlserver/lightgbm/model.txt /models/model.txt
 
 # Set proper privileges for KServe
