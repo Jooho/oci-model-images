@@ -18,6 +18,7 @@ IMAGE_ONNX = $(REGISTRY)/mlserver-onnx:$(ONNX_VERSION)
 IMAGE_ONNX_LATEST = $(REGISTRY)/mlserver-onnx:latest
 
 .PHONY: help train-sklearn train-xgboost train-lightgbm train-onnx train-all \
+        test-sklearn test-xgboost test-lightgbm test-onnx test-all \
         build-sklearn build-xgboost build-lightgbm build-onnx build-all \
         push-sklearn push-xgboost push-lightgbm push-onnx push-all \
         all clean install-deps
@@ -45,6 +46,12 @@ help:
 	@echo "  train-lightgbm  - Train lightgbm model on Iris dataset"
 	@echo "  train-onnx      - Train and convert model to ONNX format (CPU/GPU compatible)"
 	@echo "  train-all       - Train all models"
+	@echo ""
+	@echo "  test-sklearn    - Test sklearn model inference"
+	@echo "  test-xgboost    - Test xgboost model inference"
+	@echo "  test-lightgbm   - Test lightgbm model inference"
+	@echo "  test-onnx       - Test ONNX model inference"
+	@echo "  test-all        - Test all model inferences"
 	@echo ""
 	@echo "  build-sklearn   - Build sklearn model image"
 	@echo "  build-xgboost   - Build xgboost model image"
@@ -101,6 +108,27 @@ train-onnx:
 train-all: train-sklearn train-xgboost train-lightgbm train-onnx
 	@echo ""
 	@echo "✓ All models trained successfully"
+
+# Test targets
+test-sklearn:
+	@echo "Testing sklearn model inference..."
+	PYTHONPATH=.venv/lib/python3.12/site-packages python3.12 test-sklearn.py
+
+test-xgboost:
+	@echo "Testing xgboost model inference..."
+	PYTHONPATH=.venv/lib/python3.12/site-packages python3.12 test-xgboost.py
+
+test-lightgbm:
+	@echo "Testing lightgbm model inference..."
+	PYTHONPATH=.venv/lib/python3.12/site-packages python3.12 test-lightgbm.py
+
+test-onnx:
+	@echo "Testing ONNX model inference..."
+	PYTHONPATH=.venv/lib/python3.12/site-packages python3.12 test-onnx.py
+
+test-all: test-sklearn test-xgboost test-lightgbm test-onnx
+	@echo ""
+	@echo "✓ All model inference tests passed"
 
 # Build targets
 build-sklearn:

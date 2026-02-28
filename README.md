@@ -46,6 +46,27 @@ All trained models produce the expected output `[1, 1]` for the reference test d
 [[6.8, 2.8, 4.8, 1.4], [6.0, 3.4, 4.5, 1.6]]
 ```
 
+### Testing Models
+
+Test trained models locally by loading and performing inference:
+
+```bash
+# Test all models
+make test-all
+
+# Or test specific models
+make test-sklearn
+make test-xgboost
+make test-lightgbm
+make test-onnx
+```
+
+Tests validate that:
+
+- Models can be loaded successfully
+- Inference produces expected predictions
+- Results match training validation
+
 ### Building Images
 
 Build all model images:
