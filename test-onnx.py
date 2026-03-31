@@ -37,8 +37,10 @@ print(f"\nPerforming inference on test data:")
 print(f"Input shape: {test_data.shape}")
 print(f"Input data:\n{test_data}")
 
-predictions = session.run([output_name], {input_name: test_data})[0]
-print(f"\nPredictions: {predictions.tolist()}")
+raw_output = session.run([output_name], {input_name: test_data})[0]
+predictions = np.argmax(raw_output, axis=1)
+print(f"\nRaw output shape: {raw_output.shape}")
+print(f"Predictions: {predictions.tolist()}")
 print(f"Expected:    {expected_output}")
 
 # Validate results
