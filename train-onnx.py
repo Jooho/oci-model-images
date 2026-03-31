@@ -58,7 +58,8 @@ initial_type = [('float_input', FloatTensorType([None, 4]))]
 onnx_model = convert_sklearn(
     model,
     initial_types=initial_type,
-    target_opset=12  # Compatible with most ONNX runtimes
+    target_opset=12,  # Compatible with most ONNX runtimes
+    options={type(model): {'zipmap': False}}  # Avoid sequence of maps output
 )
 
 # Save ONNX model
